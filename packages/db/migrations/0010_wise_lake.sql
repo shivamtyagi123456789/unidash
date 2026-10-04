@@ -1,0 +1,1 @@
+CREATE UNIQUE INDEX "terms_one_current_per_user_uq" ON "terms" USING btree ("user_id") WHERE "terms"."is_current";

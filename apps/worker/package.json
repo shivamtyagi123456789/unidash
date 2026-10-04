@@ -1,0 +1,22 @@
+{
+  "name": "@unidash/worker",
+  "private": true,
+  "type": "module",
+  "scripts": {
+    "dev": "tsx watch src/main.ts",
+    "start": "tsx src/main.ts",
+    "typecheck": "tsc --noEmit"
+  },
+  "dependencies": {
+    "@unidash/config": "workspace:*",
+    "@unidash/db": "workspace:*",
+    "dotenv": "18.0.5",
+    "pg-boss": "12.35.1",
+    "pino": "10.3.1",
+    "tsx": "4.23.15"
+  },
+  "devDependencies": {
+    "@types/node": "20.19.43",
+    "typescript": "5.9.3"
+  }
+}

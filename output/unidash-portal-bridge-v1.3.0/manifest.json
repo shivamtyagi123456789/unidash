@@ -1,0 +1,22 @@
+{
+  "manifest_version": 3,
+  "name": "UniDash Portal Bridge",
+  "short_name": "UniDash Bridge",
+  "version": "1.3.0",
+  "description": "Opens your college portals (Moodle, AMS), lets YOU sign in, reads your records locally and sends a change report to your paired UniDash dashboard. Never stores passwords.",
+  "minimum_chrome_version": "111",
+  "permissions": ["activeTab", "storage", "scripting"],
+  "optional_host_permissions": [
+    "https://*/*",
+    "http://localhost/*",
+    "http://127.0.0.1/*"
+  ],
+  "background": {
+    "service_worker": "background.js"
+  },
+  "action": {
+    "default_title": "UniDash Portal Bridge",
+    "default_popup": "popup.html"
+  },
+  "options_page": "options.html"
+}

@@ -1,0 +1,190 @@
+<!DOCTYPE html>
+<html lang="en" data-theme="dark">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+  <title>UniDash — One dashboard for your whole academic life</title>
+  <meta name="description" content="UniDash: one calm academic dashboard for exams, deadlines, attendance, files and projects.">
+  <meta name="theme-color" content="#07080b">
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <!-- v2 type system:
+       Fraunces (variable: opsz 9–144, SOFT, WONK) — editorial display, optical sizing keeps it crisp at every size
+       Geist — UI / body (Vercel, built for screen legibility)
+       JetBrains Mono — telemetry & numbers (tall x-height, clearer than most monos at small sizes)
+       Noto Sans Devanagari — Hinglish / Hindi fallback -->
+  <link href="https://fonts.googleapis.com/css2?family=Fraunces:ital,opsz,wght,SOFT,WONK@0,9..144,300..800,0..100,0..1;1,9..144,300..800,0..100,0..1&family=Geist:wght@300..800&family=JetBrains+Mono:wght@400;500;600;700&family=Noto+Sans+Devanagari:wght@400;500&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="css/style.css">
+  <link rel="stylesheet" href="css/v2.css">
+  <script>
+    // Apply theme before first paint (SPEC §14.2 — no flash)
+    (function () { try { var t = localStorage.getItem('unidash-theme'); if (t) document.documentElement.setAttribute('data-theme', t); } catch (e) {} })();
+  </script>
+  <script type="importmap">
+    { "imports": {
+        "three": "https://cdn.jsdelivr.net/npm/three@0.160.0/build/three.module.js",
+        "three/addons/": "https://cdn.jsdelivr.net/npm/three@0.160.0/examples/jsm/"
+    } }
+  </script>
+  <script src="https://cdn.jsdelivr.net/npm/lucide@0.469.0/dist/umd/lucide.min.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/lenis@1.1.13/dist/lenis.min.js"></script>
+</head>
+<body>
+  <a class="skip-link" href="#main-view">Skip to content</a>
+
+  <!-- Living background: aurora fields + perspective floor grid -->
+  <div id="ambient" aria-hidden="true">
+    <span class="aurora a1"></span><span class="aurora a2"></span><span class="aurora a3"></span>
+    <div class="ambient-grid"></div>
+  </div>
+
+  <!-- Custom cursor (fine pointers only) -->
+  <div id="cursor-dot" aria-hidden="true"></div>
+  <div id="cursor-ring" aria-hidden="true"></div>
+
+  <!-- Boot sequence (skippable, honours reduced motion) -->
+  <div id="boot-screen" aria-hidden="true">
+    <div class="boot-orb">
+      <i class="orb-ring r1"></i><i class="orb-ring r2"></i><i class="orb-ring r3"></i><i class="orb-core"></i>
+    </div>
+    <div class="boot-inner">
+      <div class="boot-logo"><span class="logo-mark"></span><span>Uni<em>Dash</em></span><small class="boot-ver">v2.0</small></div>
+      <ol id="boot-lines" class="boot-lines"></ol>
+      <div class="boot-bar"><i id="boot-progress"></i></div>
+      <button id="boot-skip" class="boot-skip" type="button">press ↵ or click to skip</button>
+    </div>
+  </div>
+
+  <div id="app-shell">
+    <!-- Desktop rail navigation -->
+    <aside id="side-rail" aria-label="Primary">
+      <a class="rail-logo" href="#radar" aria-label="UniDash home"><span class="logo-mark"></span></a>
+      <nav id="rail-nav" class="rail-nav"></nav>
+      <div class="rail-foot">
+        <button id="theme-toggle" class="rail-btn" type="button" aria-label="Toggle light / dark theme"><i data-lucide="sun-moon"></i></button>
+        <div class="rail-avatar" title="Aarav · Owner">AA</div>
+      </div>
+    </aside>
+
+    <div id="main-column">
+      <!-- Top status bar -->
+      <header id="top-bar">
+        <div class="top-left">
+          <span class="mobile-logo"><span class="logo-mark"></span>Uni<em>Dash</em></span>
+          <span class="preview-pill" id="preview-pill" role="status" title="Preview data is shown while saved events load">LOADING</span>
+          <div class="clock-block">
+            <span id="clock-date" class="mono"></span>
+            <span id="clock-time" class="mono tabular"></span>
+          </div>
+        </div>
+        <div id="sync-chips" class="sync-chips" aria-label="Integration sync status"></div>
+        <div class="top-right">
+          <button id="search-trigger" class="search-trigger" type="button" aria-label="Search (Ctrl+K)">
+            <i data-lucide="search"></i><span>Search everything</span><kbd>⌘K</kbd>
+          </button>
+          <button id="bell-btn" class="icon-btn" type="button" aria-label="Notifications, 3 unread"><i data-lucide="bell"></i><b class="badge">3</b></button>
+          <button id="theme-toggle-m" class="icon-btn mobile-only" type="button" aria-label="Toggle theme"><i data-lucide="sun-moon"></i></button>
+        </div>
+        <div id="scroll-progress" aria-hidden="true"><i></i></div>
+      </header>
+
+      <main id="main-view" tabindex="-1" aria-live="polite"><div id="view-host"></div></main>
+    </div>
+
+    <!-- Mobile bottom tab bar (SPEC §10) -->
+    <nav id="tab-bar" aria-label="Primary mobile"></nav>
+  </div>
+
+  <!-- Side sheet (details) -->
+  <div id="sheet-scrim" hidden></div>
+  <aside id="side-sheet" role="dialog" aria-modal="true" aria-labelledby="sheet-title" hidden>
+    <div class="sheet-grip"></div>
+    <button id="sheet-close" class="icon-btn sheet-close" type="button" aria-label="Close"><i data-lucide="x"></i></button>
+    <div id="sheet-body"></div>
+  </aside>
+
+  <!-- Command palette -->
+  <div id="palette" role="dialog" aria-modal="true" aria-label="Search" hidden>
+    <div class="palette-box">
+      <div class="palette-input-row"><i data-lucide="search"></i><input id="palette-input" type="text" placeholder="Search exams, deadlines, files…" autocomplete="off"><kbd>esc</kbd></div>
+      <div id="palette-results" class="palette-results"></div>
+    </div>
+  </div>
+
+  <!-- Undo / info toast -->
+  <div id="toast" role="status" aria-live="polite" hidden></div>
+
+  <!-- Shown after sign-in until both college portals are connected. -->
+  <dialog id="integration-prompt" class="event-dialog integration-prompt" aria-labelledby="integration-prompt-title">
+    <div class="integration-prompt-body">
+      <div class="event-dialog-head"><div><div class="eyebrow">Portal setup</div><h2 id="integration-prompt-title">Connect your college portals?</h2></div><button class="icon-btn" type="button" data-integration-prompt-later aria-label="Close">×</button></div>
+      <p>Any portal that still needs setup will open in a new tab. Sign in there, then return to UniDash.</p>
+      <p class="integration-prompt-note">Signing in alone does not let UniDash scan portal records. Moodle needs an approved token or calendar feed, and AMS needs a supported read-only access method. UniDash will not collect your portal passwords.</p>
+      <div class="event-dialog-actions"><button class="btn" type="button" data-integration-prompt-later>Later</button><button class="btn primary" type="button" data-integration-prompt-connect>Open portals</button></div>
+    </div>
+  </dialog>
+
+  <!-- Manual calendar event -->
+  <dialog id="event-dialog" class="event-dialog" aria-labelledby="event-form-title">
+    <form id="event-form" novalidate>
+      <div class="event-dialog-head">
+        <div><div class="eyebrow">Personal calendar</div><h2 id="event-form-title">Add an event</h2></div>
+        <button class="icon-btn" type="button" data-event-cancel aria-label="Close event form">×</button>
+      </div>
+      <div class="event-form-grid">
+        <label class="event-field event-field-wide">Title *
+          <input name="title" type="text" maxlength="200" required autocomplete="off" placeholder="e.g. Database quiz">
+        </label>
+        <label class="event-field">Type
+          <select name="kind">
+            <option value="CLASS">Class</option><option value="LAB_SESSION">Lab session</option>
+            <option value="ASSIGNMENT">Assignment</option><option value="QUIZ">Quiz</option>
+            <option value="MINOR_EXAM">Minor exam</option><option value="MAJOR_EXAM">Major exam</option>
+            <option value="PRACTICAL_EXAM">Practical exam</option><option value="VIVA">Viva</option>
+            <option value="PRESENTATION">Presentation</option><option value="PROJECT_MILESTONE">Project milestone</option>
+            <option value="LAB_FILE_SUBMISSION">Lab file submission</option><option value="PERSONAL">Personal</option>
+            <option value="HOLIDAY">Holiday</option><option value="FEE_DUE">Fee due</option>
+            <option value="NOTICE_DEADLINE">Notice deadline</option><option value="OTHER">Other</option>
+          </select>
+        </label>
+        <label class="event-field">Label
+          <input name="label" type="text" maxlength="80" placeholder="e.g. Minor-1">
+        </label>
+        <label class="event-field">Subject code
+          <input name="subjectCode" type="text" maxlength="100" placeholder="e.g. CS-301">
+        </label>
+        <label class="event-field">Starts (IST) *
+          <input name="startsAt" type="datetime-local" required>
+        </label>
+        <label class="event-field">Ends (IST)
+          <input name="endsAt" type="datetime-local">
+        </label>
+        <label class="event-field">Venue
+          <input name="venue" type="text" maxlength="200" placeholder="Optional">
+        </label>
+        <label class="event-field">Syllabus / scope
+          <input name="syllabus" type="text" maxlength="2000" placeholder="Optional">
+        </label>
+        <label class="event-field">Weightage (%)
+          <input name="weightagePct" type="number" min="0" max="100" step="0.01" inputmode="decimal" placeholder="Optional">
+        </label>
+        <label class="event-field">Maximum marks
+          <input name="maxMarks" type="number" min="0.01" step="0.01" inputmode="decimal" placeholder="Optional">
+        </label>
+        <label class="event-check"><input name="isDeadline" type="checkbox"> This is a deadline</label>
+        <label class="event-check"><input name="isAllDay" type="checkbox"> All-day event</label>
+        <label class="event-field event-field-wide">Description
+          <textarea name="description" rows="3" maxlength="4000" placeholder="Optional details"></textarea>
+        </label>
+      </div>
+      <p id="event-form-error" class="event-form-error" role="alert" hidden></p>
+      <div class="event-dialog-actions">
+        <button class="btn" type="button" data-event-cancel>Cancel</button>
+        <button class="btn primary" type="submit" data-event-submit>Save event</button>
+      </div>
+    </form>
+  </dialog>
+
+  <script type="module" src="js/app.js"></script>
+</body>
+</html>

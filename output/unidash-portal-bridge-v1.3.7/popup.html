@@ -1,0 +1,54 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <title>UniDash Bridge</title>
+  <style>
+    body { font: 13px/1.45 system-ui, -apple-system, Segoe UI, Roboto, sans-serif; width: 320px; margin: 0; color: #0f172a; }
+    header { background: #4f46e5; color: #fff; padding: 12px 14px; }
+    header h1 { font-size: 15px; margin: 0; }
+    header p { margin: 2px 0 0; opacity: .85; font-size: 12px; }
+    main { padding: 12px 14px; }
+    .row { display: flex; justify-content: space-between; align-items: center; gap: 8px; margin: 6px 0; }
+    .origin { font-family: ui-monospace, monospace; font-size: 12px; word-break: break-all; }
+    button { border: 0; border-radius: 6px; padding: 7px 10px; cursor: pointer; font-weight: 600; background: #4f46e5; color: #fff; }
+    button.secondary { background: #e2e8f0; color: #0f172a; }
+    button.danger { background: #fee2e2; color: #b91c1c; }
+    .muted { color: #64748b; font-size: 12px; }
+    .ok { color: #15803d; font-weight: 600; }
+    h2 { font-size: 12px; text-transform: uppercase; letter-spacing: .05em; color: #64748b; margin: 14px 0 6px; }
+    ul { padding: 0; margin: 0; list-style: none; }
+    #status { margin-top: 8px; font-size: 12px; }
+  </style>
+</head>
+<body>
+  <header>
+    <h1>UniDash Portal Bridge</h1>
+    <p>Scans run only when you click Scan. Passwords are never stored.</p>
+  </header>
+  <main>
+    <section id="current-site">
+      <h2>This tab</h2>
+      <div class="origin" id="current-origin">—</div>
+      <div class="row" style="margin-top:8px">
+        <span id="pair-state" class="muted"></span>
+        <button id="pair-btn" hidden>Pair with this dashboard</button>
+      </div>
+    </section>
+    <section>
+      <h2>Paired dashboards</h2>
+      <ul id="paired-list"><li class="muted">None yet</li></ul>
+    </section>
+    <section>
+      <h2>Last scan</h2>
+      <div id="last-scan" class="muted">No scans yet</div>
+    </section>
+    <div class="row" style="margin-top:12px">
+      <button class="secondary" id="options-btn">Portal settings</button>
+    </div>
+    <div id="status" class="muted"></div>
+  </main>
+  <script src="lib/config.js"></script>
+  <script src="popup.js"></script>
+</body>
+</html>

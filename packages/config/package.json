@@ -1,0 +1,12 @@
+{
+  "name": "@unidash/config",
+  "private": true,
+  "type": "module",
+  "exports": {
+    "./env": "./src/env.ts"
+  },
+  "dependencies": {
+    "dotenv": "18.0.5",
+    "zod": "4.6.5"
+  }
+}

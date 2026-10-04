@@ -1,0 +1,16 @@
+{
+  "name": "unidash",
+  "private": true,
+  "packageManager": "pnpm@11.19.0",
+  "scripts": {
+    "dev": "pnpm sync:frontend && pnpm --filter @unidash/web dev",
+    "build": "pnpm sync:frontend && pnpm --filter @unidash/web build",
+    "sync:frontend": "node scripts/sync-frontend.mjs",
+    "typecheck": "pnpm --recursive --if-present typecheck",
+    "lint": "pnpm --filter @unidash/web lint",
+    "db:generate": "pnpm --filter @unidash/db generate",
+    "db:migrate": "pnpm --filter @unidash/db migrate",
+    "invite-owner": "pnpm --filter @unidash/db invite-owner",
+    "worker": "pnpm --filter @unidash/worker dev"
+  }
+}

@@ -1,0 +1,1 @@
+ALTER TABLE "reminders" ALTER COLUMN "is_default" SET DEFAULT true;

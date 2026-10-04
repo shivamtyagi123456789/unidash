@@ -1,0 +1,25 @@
+{
+  "name": "@unidash/db",
+  "private": true,
+  "type": "module",
+  "exports": {
+    "./client": "./src/client.ts",
+    "./schema": "./src/schema.ts"
+  },
+  "scripts": {
+    "generate": "drizzle-kit generate",
+    "migrate": "drizzle-kit migrate",
+    "invite-owner": "tsx src/invite-owner.ts"
+  },
+  "dependencies": {
+    "drizzle-orm": "0.45.3",
+    "kysely": "0.29.6",
+    "pg": "8.23.1"
+  },
+  "devDependencies": {
+    "@types/pg": "8.23.1",
+    "dotenv": "18.0.5",
+    "drizzle-kit": "0.31.11",
+    "tsx": "4.23.15"
+  }
+}
