@@ -16,3 +16,6 @@ apps/worker/artifacts/
 apps/worker/sessions/
 apps/worker/.auth/
 packages/db/local-storage/
+
+.vercel
+.env*
